@@ -1,0 +1,24 @@
+<?php
+
+/**
+ * @file
+ * Contains openfed_graphdb_web_services.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+
+/**
+ * Implements hook_help().
+ */
+function openfed_graphdb_web_services_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the openfed_graphdb_web_services module.
+    case 'help.page.openfed_graphdb_web_services':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Provides connector(s) to query GraphDB using RESTful web services') . '</p>';
+      return $output;
+
+    default:
+  }
+}

@@ -1,0 +1,7 @@
+name: Neo4j connector
+type: module
+description: Provides access to Neo4J database. In order to preform requests via Drupal.
+core: 8.x
+package: Custom
+dependencies:
+  - openfed_graphdb_web_services

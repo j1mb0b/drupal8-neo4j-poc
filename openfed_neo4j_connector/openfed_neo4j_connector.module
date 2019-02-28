@@ -1,0 +1,102 @@
+<?php
+
+/**
+ * @file
+ * Contains openfed_neo4j_connector.module.
+ */
+
+use Drupal\Core\Routing\RouteMatchInterface;
+use Drupal\openfed_neo4j_connector\OpenFedNeo4JDrupal;
+use Drupal\openfed_graphdb_web_services\Controller\OpenFedGraphdbWebServicesController;
+
+/**
+ * Workaround to load the Neo4J PHP library. I've tried to use composer_manager module, but keeping Drupal8 core
+ * up to date and the module without problems seemed impossible.
+ * @todo fix ugly loading when there is a standard way of handling composer libraries in Drupal 8.
+ */
+require_once __DIR__ . '/vendor/autoload.php';
+
+/**
+ * Implements hook_help().
+ */
+function openfed_neo4j_connector_help($route_name, RouteMatchInterface $route_match) {
+  switch ($route_name) {
+    // Main module help for the openfed_neo4j_connector module.
+    case 'help.page.openfed_neo4j_connector':
+      $output = '';
+      $output .= '<h3>' . t('About') . '</h3>';
+      $output .= '<p>' . t('Provides access to Neo4J database. In order to preform requests via Drupal.') . '</p>';
+      return $output;
+
+    default:
+  }
+}
+
+/**
+ * Neo4J Drupal service getter shortcut.
+ *
+ * @return Neo4JDrupal
+ */
+function openfed_neo4j_connector_get_client() {
+  return \Drupal::service('openfed_neo4j_connector');
+}
+
+/**
+ * Implements hook_permission().
+ */
+function openfed_neo4j_connector_permission() {
+  return array(
+    'access openfed neo4j graph information' => array(
+      'title' => t('Access OpenFed Neo4J graph information'),
+      'description' => t('Access to the graph data regarding the Drupal content.'),
+    ),
+    'administer openfed neo4j connector configuration' => array(
+      'title' => t('Administer OpenFed Neo4J connection'),
+      'description' => t('Administer global settings for the graph database.'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_entity_insert().
+ */
+function openfed_neo4j_connector_entity_insert(Drupal\Core\Entity\EntityInterface $entity) {
+  if ($entity->getType() === 'lists') {
+    $graphdb = new OpenFedGraphdbWebServicesController();
+    $id = $graphdb->initiateNodeCreator($entity);
+    drupal_set_message(t('Node @id has been created in graph DB.', array('@id' => $id)));
+  }
+}
+
+/**
+ * Delete all graph data.
+ */
+function openfed_neo4j_connector_purge_db() {
+  // Delete all relationships.
+  Neo4JDrupal::sharedInstance()->query("
+    START n = node(*)
+    MATCH (n)-[r]->()
+    DELETE r
+  ");
+
+  // Delete all nodes.
+  Neo4JDrupal::sharedInstance()->query("
+    START n = node(*)
+    DELETE n
+  ");
+}
+
+function openfed_neo4j_connector_get_server_mapping_configuration() {
+  return [
+    'field_tags:entity:tid' => 'taxonomy_term',
+    'uid:entity:uid' => 'user',
+    'field_page_reference' => 'node',
+  ];
+}
+
+/**
+ * @return \Drupal\openfed_neo4j_connector\Factory\OpenFedNeo4JIndexParamFactory
+ */
+function openfed_neo4j_connector_entity_index_factory() {
+  return Drupal::service('openfed_neo4j_connector.entity_index_factory');
+}

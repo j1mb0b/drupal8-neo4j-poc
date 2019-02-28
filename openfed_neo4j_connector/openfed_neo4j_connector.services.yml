@@ -1,0 +1,26 @@
+services:
+  neo4jphp.client:
+    class: Everyman\Neo4j\Client
+    factory: openfed_neo4j_connector.library_factory:create
+
+  openfed_neo4j_connector.library_factory:
+    class: Drupal\openfed_neo4j_connector\OpenFedNeo4JDrupalLibraryFactory
+
+  openfed_neo4j_connector.query_factory:
+    class: Drupal\openfed_neo4j_connector\OpenFedNeo4JDrupalQueryFactory
+
+  openfed_neo4j_connector.index_factory:
+    class: Drupal\openfed_neo4j_connector\OpenFedNeo4JDrupalIndexFactory
+
+  openfed_neo4j_connector:
+    class: Drupal\openfed_neo4j_connector\OpenFedNeo4JDrupal
+    arguments:
+      - @neo4jphp.client
+      - @openfed_neo4j_connector.index_factory
+      - @openfed_neo4j_connector.query_factory
+
+  openfed_neo4j_connector.entity_index_factory:
+    class: Drupal\openfed_neo4j_connector\Factory\OpenFedNeo4JIndexParamFactory
+    arguments:
+      - drupal
+      - entity_key

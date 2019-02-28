@@ -1,0 +1,5 @@
+name: GraphDB web services
+type: module
+description: Provides connector(s) to query GraphDB using RESTful web services
+core: 8.x
+package: Custom
